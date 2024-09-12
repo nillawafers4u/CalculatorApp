@@ -56,42 +56,47 @@ internal class Program
             int bigAnswer = 0;
             int secondCounter = 0;
 
-            for (int counter = 0; counter < numbers.Length; counter+=2)
+            for (int i = 0; i < numbers.Length; i++)
             {
                 char c = operators.ElementAt(secondCounter);
-                if(c != '\u0000' && numbers[counter] != 0)
+                if(c != '\u0000' && i < numbers.Length)
                 {
                     switch (c)
                     {
                         case '-':
-                            answer = numbers[counter] - numbers[counter + 1]; break;
+                            answer = numbers[i] - numbers[i += 1]; break;
                         case '+':
-                            answer = numbers[counter] + numbers[counter + 1]; break;
+                            answer = numbers[i] + numbers[i += 1]; break;
                         case '/':
-                            answer = numbers[counter] / numbers[counter + 1]; break;
+                            answer = numbers[i] / numbers[i += 1]; break;
                         case '*':
-                            answer = numbers[counter] * numbers[counter + 1]; break;
+                            answer = numbers[i] * numbers[i += 1]; break;
                     }
-                    
+                    if(i<numbers.Length-1)
+                    {
+                    i++;
+                    }
+                    bigAnswer += answer;      
+                    Console.WriteLine("calculating");
 
                 } 
-                else if (numbers[counter] == numbers.Length-1)
+                else
                 {
-                
+                    Console.WriteLine("only one number left!");
                     switch (c)
                     {
                         case '-':
-                            bigAnswer -= numbers[counter]; break;
+                            bigAnswer -= numbers[i]; break;
                         case '+':
-                            bigAnswer += numbers[counter]; break;
+                            bigAnswer += numbers[i]; break;
                         case '/':
-                            bigAnswer /= numbers[counter]; break;
+                            bigAnswer /= numbers[i]; break;
                         case '*':
-                            bigAnswer *= numbers[counter]; break;
+                            bigAnswer *= numbers[i]; break;
                     }
                 }
                     secondCounter++;
-                    bigAnswer += answer;
+                    
                                         
             }
             return bigAnswer;
