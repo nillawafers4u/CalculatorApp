@@ -10,7 +10,7 @@ internal class Program
 
         while(true) 
         {
-        string answer;
+
         Console.WriteLine("please input a simple math problem. Examples: 5*5, 124/76, 4784+272 etc.");
 
         //receives input from user
@@ -38,21 +38,20 @@ internal class Program
 
 
 
-        int calculation(string input, char i)
+        int calculation(string input, char[] operators)
         {
+            int answer = 0;
             string[] values = input.Split('/', '-', '+', '*');
-            int bigAnswer;
+            int bigAnswer = 0;
             int[] numbers = new int[values.Length];
 
-            for (int counter = 0; counter >= values.Length; counter++)
+            for (int counter = 0; counter >= values.Length; counter+=2)
             {
 
                 int.TryParse(values[counter], out numbers[counter]);
-                int.TryParse(values[1], out int second);
-                int answer;
 
-
-                switch (i)
+                char c = operators[counter];
+                switch (c)
                 {
                     case '-':
                         answer = numbers[counter] - numbers[counter+1]; break;
@@ -62,7 +61,9 @@ internal class Program
                         answer = numbers[counter] - numbers[counter + 1]; break;
                     case '*':
                         answer = numbers[counter] - numbers[counter + 1]; break;
+
                 }
+                bigAnswer += answer;
             }
             return bigAnswer;
 
@@ -75,7 +76,7 @@ internal class Program
         //searches for operator in the input
         char operatorDetector(string input)
         {
-            char c = '';
+            char c = 'n';
             foreach (char i in input)
             {
                 switch (i)
