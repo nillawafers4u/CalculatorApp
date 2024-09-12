@@ -59,7 +59,7 @@ internal class Program
             for (int counter = 0; counter < numbers.Length; counter+=2)
             {
                 char c = operators.ElementAt(secondCounter);
-                if(c != '\u0000' && numbers[counter] != 0 && secondCounter < operators.Count && counter+1 < numbers.Length)
+                if(c != '\u0000' && numbers[counter] != 0)
                 {
                     switch (c)
                     {
@@ -72,25 +72,27 @@ internal class Program
                         case '*':
                             answer = numbers[counter] * numbers[counter + 1]; break;
                     }
+                    
 
                 } 
-                else 
+                else if (numbers[counter] == numbers.Length-1)
                 {
                 
                     switch (c)
                     {
                         case '-':
-                            answer = numbers[counter] - numbers[counter + 1]; break;
+                            bigAnswer -= numbers[counter]; break;
                         case '+':
-                            answer = numbers[counter] + numbers[counter + 1]; break;
+                            bigAnswer += numbers[counter]; break;
                         case '/':
-                            answer = numbers[counter] / numbers[counter + 1]; break;
+                            bigAnswer /= numbers[counter]; break;
                         case '*':
-                            answer = numbers[counter] * numbers[counter + 1]; break;
+                            bigAnswer *= numbers[counter]; break;
                     }
                 }
                     secondCounter++;
-                    bigAnswer += answer;                    
+                    bigAnswer += answer;
+                                        
             }
             return bigAnswer;
         }
