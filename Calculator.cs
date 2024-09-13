@@ -52,54 +52,31 @@ internal class Program
 
         int calculation(int[] numbers, List<char> operators)
         {
-            int answer = 0;
-            int bigAnswer = 0;
+            int answer = numbers[0];
             int secondCounter = 0;
 
             for (int i = 0; i < numbers.Length; i++)
             {
                 char c = operators.ElementAt(secondCounter);
-                if(c != '\u0000' && i < numbers.Length)
+                if(c != '\u0000' && i < operators.Count)
                 {
                     switch (c)
                     {
                         case '-':
-                            answer = numbers[i] - numbers[i += 1]; break;
+                            answer -= numbers[i + 1]; break;
                         case '+':
-                            answer = numbers[i] + numbers[i += 1]; break;
+                            answer -= numbers[i + 1]; break;
                         case '/':
-                            answer = numbers[i] / numbers[i += 1]; break;
+                            answer -= numbers[i + 1]; break;
                         case '*':
-                            answer = numbers[i] * numbers[i += 1]; break;
-                    }
-                    if(i<numbers.Length-1)
-                    {
-                    i++;
-                    }
-                    bigAnswer += answer;      
-                    Console.WriteLine("calculating");
+                            answer -= numbers[i + 1]; break;
+                    }     
 
-                } 
-                else
-                {
-                    Console.WriteLine("only one number left!");
-                    switch (c)
-                    {
-                        case '-':
-                            bigAnswer -= numbers[i]; break;
-                        case '+':
-                            bigAnswer += numbers[i]; break;
-                        case '/':
-                            bigAnswer /= numbers[i]; break;
-                        case '*':
-                            bigAnswer *= numbers[i]; break;
-                    }
                 }
-                    secondCounter++;
                     
                                         
             }
-            return bigAnswer;
+            return answer;
         }
 
 
