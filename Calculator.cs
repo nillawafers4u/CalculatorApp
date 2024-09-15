@@ -16,95 +16,80 @@ internal class Program
             //receives input from user
             string input = Console.ReadLine();
 
-                
-            // program shutdown
-            if (input == "exit") break;
-
-
-
-
+            //program shutdown
+            if (input?.ToLower() == "exit")
+                break;
 
             //creating the int array that will hold all the numbers.
-            string[] values = input.Split('/', '-', '+', '*');
-            int [] numbers = Array.ConvertAll(values, int.Parse);
+            double [] numbers = extractNumbers(input);
 
+            //creating a list to hold all of the operators
+            List<char> operators = extractOperators(input);
 
+            //checks to ensure that the user followed the normal math format
+            if (numbers.Length != operators.Count + 1)
+            {
+                Console.WriteLine("Invalid input. Please ensure the format is correct.");
+                continue;
+            }
 
-            //creates list of operators
-            List<char> operators = operatorDetector(input);
-
-
-            //calculation answer
-            int result = calculation(numbers, operators);
+            //calculates the answer
+            double result = calculate(numbers, operators);
 
             //Then uses the result from operatorDetector to actually do math ad print the result to the user.
             Console.WriteLine(result);
             
 
         }
-            
 
 
-
-
-
-
-
-        int calculation(int[] numbers, List<char> operators)
+        static double calculate(double[] numbers, List<char> operators)
         {
-            int answer = numbers[0];
-            int secondCounter = 0;
+            if (numbers.Length == 0)
+                return 0;
 
-            for (int i = 0; i < numbers.Length; i++)
+            double result = numbers[0];
+
+            for (int i = 0; i < operators.Count; i++)
             {
-                char c = operators.ElementAt(secondCounter);
-                if(c != '\u0000' && i < operators.Count)
+                switch (operators[i])
                 {
-                    switch (c)
-                    {
-                        case '-':
-                            answer -= numbers[i + 1]; break;
-                        case '+':
-                            answer -= numbers[i + 1]; break;
-                        case '/':
-                            answer -= numbers[i + 1]; break;
-                        case '*':
-                            answer -= numbers[i + 1]; break;
-                    }     
-
+                    case '+':
+                        result += numbers[i + 1];
+                        break;
+                    case '-':
+                        result -= numbers[i + 1];
+                        break;
+                    case '*':
+                        result *= numbers[i + 1];
+                        break;
+                    case '/':
+                        if (numbers[i + 1] == 0)
+                            throw new DivideByZeroException("Cannot divide by zero");
+                        result /= numbers[i + 1];
+                        break;
+                    default:
+                        throw new ArgumentException($"Invalid operator: {operators[i]}");
                 }
-                    
-                                        
             }
-            return answer;
+
+            return result;
         }
+    }
 
 
 
+        static double[] extractNumbers(string input)
+        {
+            string[] numbers = System.Text.RegularExpressions.Regex.Split(input, @"[-+*/]");
+            return Array.ConvertAll(numbers, double.Parse);
+        }
 
 
         //produces list of operators from the users input
-        List<char> operatorDetector(string input)
+        static List<char> extractOperators(string input)
         {
-
-            List<char> list = new List<char>();
-            foreach (char i in input)
-            {
-                switch (i)
-                {
-                    case '-':
-                        list.Add(i); break;
-                    case '+':
-                        list.Add(i); break;
-                    case '/':
-                        list.Add(i); break;
-                    case '*':
-                        list.Add(i); break;
-                }
-            }
-            return list;
-            
+            return new List<char>(input.Where(c => "+-*/".Contains(c)));
         }
-    }
+    
 }
-
