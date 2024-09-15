@@ -2,6 +2,7 @@
 
 
 using System.Diagnostics.Metrics;
+using System.Linq.Expressions;
 
 internal class Program
 {
@@ -20,25 +21,32 @@ internal class Program
             if (input?.ToLower() == "exit")
                 break;
 
-            //creating the int array that will hold all the numbers.
-            double [] numbers = extractNumbers(input);
-
-            //creating a list to hold all of the operators
-            List<char> operators = extractOperators(input);
-
-            //checks to ensure that the user followed the normal math format
-            if (numbers.Length != operators.Count + 1)
+            try
             {
-                Console.WriteLine("Invalid input. Please ensure the format is correct.");
-                continue;
+                //creating the int array that will hold all the numbers.
+                double[] numbers = extractNumbers(input);
+
+                //creating a list to hold all of the operators
+                List<char> operators = extractOperators(input);
+
+                //checks to ensure that the user followed the normal math format
+                if (numbers.Length != operators.Count + 1)
+                {
+                    Console.WriteLine("Invalid input. Please ensure the format is correct.");
+                    continue;
+                }
+
+                //calculates the answer
+                double result = calculate(numbers, operators);
+
+                //Then uses the result from operatorDetector to actually do math ad print the result to the user.
+                Console.WriteLine(result);
             }
 
-            //calculates the answer
-            double result = calculate(numbers, operators);
-
-            //Then uses the result from operatorDetector to actually do math ad print the result to the user.
-            Console.WriteLine(result);
-            
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
 
         }
 
