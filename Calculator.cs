@@ -1,11 +1,13 @@
 ﻿
 
-
+using System.Text.RegularExpressions;
 using System.Diagnostics.Metrics;
 using System.Linq.Expressions;
+using System.Text.Json;
 
 internal class Program
 {
+    new FormatException 
     private static void Main(string[] args)
     {
 
@@ -15,43 +17,31 @@ internal class Program
             Console.WriteLine("please input a simple math problem. Examples: 5*5, 124/76, 4784+272 etc.");
 
             //receives input from user
-            string input = Console.ReadLine();
-
+            var input = Console.ReadLine();
+            var portion = input?[1..4];
+            new Token (TokenType.Number, 1, 1, 1);
             //program shutdown
-            if (input?.ToLower() == "exit")
+            if (input?.ToLower() is null or "exit")
                 break;
 
-            try
+            input = input.Trim();
+            var numberLength = GetNumberLength(input);
+            var result = double.Parse(input.Substring(0, numberLength));
+            input = input.Substring(numberLength).Trim();
+            while (input.Length > 0)
             {
-                //creating the int array that will hold all the numbers.
-                double[] numbers = extractNumbers(input);
-
-                //creating a list to hold all of the operators
-                List<char> operators = extractOperators(input);
-
-                //checks to ensure that the user followed the normal math format
-                if (numbers.Length != operators.Count + 1)
-                {
-                    Console.WriteLine("Invalid input. Please ensure the format is correct.");
-                    continue;
-                }
-
-                //calculates the answer
-                double result = calculate(numbers, operators);
-
-                //Then uses the result from operatorDetector to actually do math ad print the result to the user.
-                Console.WriteLine(result);
-            }
-
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
+                var op = input[0];
+                input = input.Substring(1).Trim();
+                numberLength = GetNumberLength(input);
+                var operand = double.Parse(input.Substring(0, numberLength));
+                input = input.Substring(numberLength).Trim();
+                result = Calculate(result, op, operand);
             }
 
         }
 
 
-        static double calculate(double[] numbers, List<char> operators)
+        static double Calculate(double[] numbers, List<char> operators)
         {
             if (numbers.Length == 0)
                 return 0;
@@ -60,25 +50,13 @@ internal class Program
 
             for (int i = 0; i < operators.Count; i++)
             {
-                switch (operators[i])
+                result = operators[i] switch
                 {
-                    case '+':
-                        result += numbers[i + 1];
-                        break;
-                    case '-':
-                        result -= numbers[i + 1];
-                        break;
-                    case '*':
-                        result *= numbers[i + 1];
-                        break;
-                    case '/':
-                        if (numbers[i + 1] == 0)
-                            throw new DivideByZeroException("Cannot divide by zero");
-                        result /= numbers[i + 1];
-                        break;
-                    default:
-                        throw new ArgumentException($"Invalid operator: {operators[i]}");
-                }
+                    '+' => result += numbers[i + 1],
+                    '-' => result -= numbers[i + 1],
+                    '*' => result *= numbers[i + 1],
+                    '/' => result /= numbers[i + 1],  
+                };
             }
 
             return result;
@@ -86,18 +64,14 @@ internal class Program
     }
 
 
-
-        static double[] extractNumbers(string input)
-        {
-            string[] numbers = System.Text.RegularExpressions.Regex.Split(input, @"[-+*/]");
-            return Array.ConvertAll(numbers, double.Parse);
-        }
+        //extracts the numbers to an double array so that they can be worked
+        static double[] ExtractNumbers(string input) => Regex.Split(input, @"[-+*/]").Select(double.Parse).ToArray();
+        
 
 
         //produces list of operators from the users input
-        static List<char> extractOperators(string input)
-        {
-            return new List<char>(input.Where(c => "+-*/".Contains(c)));
-        }
+        static List<char> ExtractOperators(string input) => input.Where(c => "+-*/".Contains(c)).ToList();
+        
+
     
 }
