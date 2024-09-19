@@ -4,7 +4,7 @@ using Microsoft.VisualBasic;
 using System.Diagnostics.SymbolStore;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-namespace Calculator;
+namespace ConsoleApp1;
 
 
 
