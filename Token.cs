@@ -6,65 +6,23 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1
 {
+    enum TokenType
+    {
+        Number,
+        Operator,
+        EOF
+    }
+
     class Token
     {
-        private enum TokenType
+        public TokenType Type { get; }
+        public ReadOnlyMemory<char> Value { get; }
+
+        public Token(TokenType type, ReadOnlyMemory<char> value)
         {
-            Nothing,
-            Number,
-            Operator,
-
-        };
-
-        // For all tokens
-        TokenType tokenType = TokenType.Nothing;
-
-        // If it's a number
-        double value = 0.0;
-
-        //If it's an operator
-        char symbol = ' ';
-
-        private Token() { }
-
-        public static Token StringToToken(string str)
-        {
-            Token t = new Token();
-
-            if (double.TryParse(str, out t.value))
-                t.tokenType = TokenType.Number;
-            else
-            {
-                switch (str)
-                {
-                    case "+":
-                        t.tokenType = TokenType.Operator;
-                        t.symbol = '+';
-                        break;
-
-                    case "-":
-                        t.tokenType = TokenType.Operator;
-                        t.symbol = '-';
-                        break;
-
-                    case "*":
-                        t.tokenType = TokenType.Operator;
-                        t.symbol = '*';
-                        break;
-
-                    case "/":
-                        t.tokenType = TokenType.Operator;
-                        t.symbol = '/';
-                        break;
-
-                    default:
-                        t.tokenType = TokenType.Nothing;
-                        break;
-                }
-            }
-            return t;
+            Type = type;
+            Value = value;
         }
-
-
     }
 }
+

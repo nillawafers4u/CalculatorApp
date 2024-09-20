@@ -2,6 +2,7 @@
 
 using Microsoft.VisualBasic;
 using System.Diagnostics.SymbolStore;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 namespace ConsoleApp1;
@@ -10,119 +11,102 @@ namespace ConsoleApp1;
 
 internal class Program
 {
-    
-
-    
-
-   
 
     private static void Main(string[] args)
     {
 
-
         while (true)
         {
+            Console.Write("Enter a math problem (or 'exit' to quit): ");
+            string input = Console.ReadLine();
 
-            Console.WriteLine("please input a simple math problem. Examples: 5*5, 124/76, 4784+272 etc.");
-
-            // receives input from user
-            var inputString = Console.ReadLine();
-
-
-            //program shutdown
-            if (inputString?.ToLower() is null or "exit")
+            if (input.ToLower() == "exit")
                 break;
 
-            inputString = inputString.Trim();
-
-
-
-
-            for (int i = 0; i < inputString.Length; i++)
-
+            try
             {
-                var numberLength = GetNumberLength(inputString);
-
-                var result = double.Parse(inputString.Substring(0, numberLength));
-                inputString = inputString.Substring(numberLength).Trim();
-                while (inputString.Length > 0)
-                {
-                    char op = 'a';
-                    if (numberLength >= 1)
-                    {
-                        
-                        op = char.Parse(inputString.Substring(numberLength + 1, 1)) switch
-                        {
-                            '+' => op = '+',
-                            '-' => op = '-',
-                            '*' => op = '*',
-                            '/' => op = '/',
-                        };
-                    }
-
-                    inputString = inputString.Substring(1).Trim();
-                    numberLength = GetNumberLength(inputString);
-                    var operand = double.Parse(inputString.Substring(0, numberLength));
-                    inputString = inputString.Substring(numberLength).Trim();
-                
-                    result = Calculate(result, op, operand);
-                    
-                }
-
+                var tokens = Tokenize(input);
+                double result = EvaluateTokens(tokens);
+                Console.WriteLine($"The result is {result}");
             }
-
-
-            static double Calculate(double result, char op, double operand)
+            catch (Exception ex)
             {
-
-
-
-                result = op switch
-                {
-                    '+' => result += operand,
-                    '-' => result -= operand,
-                    '*' => result *= operand,
-                    '/' => result /= operand,
-                };
-
-
-                return result;
+                Console.WriteLine($"Error: {ex.Message}");
             }
+        }
+    }
 
+    static List<Token> Tokenize(string input)
+    {
+        var tokens = new List<Token>();
+        int start;
+        int i = 0;
 
-
-
-
-            //extracts the numbers to an double array so that they can be worked
-            static double[] ExtractNumbers(string input) => Regex.Split(input, @"[-+*/]").Select(double.Parse).ToArray();
-
-
-
-            //produces list of operators from the users input
-            static List<char> ExtractOperators(string input) => input.Where(c => "+-*/".Contains(c)).ToList();
-
-            
-            
-            static int GetNumberLength(string input)
+        while (i < input.Length)
+        {
+            if (char.IsDigit(input[i]) || input[i] == '.')
             {
-                int result = 0;
-
-
-                foreach (char c in input)
-                {
-                    if (c is '+' or '-' or '/' or '*' or ' ')
-                    {
-                        break;
-                    }
-
-                    result += 1;
-                }
-
-                return result;
-
-
+                start = i;
+                while (i < input.Length && (char.IsDigit(input[i]) || input[i] == '.'))
+                    i++;
+                tokens.Add(new Token(TokenType.Number, input.AsMemory(start, i - start)));
             }
+            else if (input[i] == '+' || input[i] == '-' || input[i] == '*' || input[i] == '/')
+            {
+                tokens.Add(new Token(TokenType.Operator, input.AsMemory(i, 1)));
+                i++;
+            }
+            else if (!char.IsWhiteSpace(input[i]))
+            {
+                throw new ArgumentException($"Invalid character in expression: '{input[i]}'");
+            }
+            else
+            {
+                i++;
+            }
+        }
 
+        tokens.Add(new Token(TokenType.EOF, ReadOnlyMemory<char>.Empty));
+        return tokens;
+    }
+
+    static double EvaluateTokens(List<Token> tokens)
+    {
+        double result = 0;
+        double currentNumber = 0;
+        char currentOperator = '+';
+
+        foreach (var token in tokens)
+        {
+            switch (token.Type)
+            {
+                case TokenType.Number:
+                    currentNumber = double.Parse(token.Value.Span, CultureInfo.InvariantCulture);
+                    break;
+                case TokenType.Operator:
+                case TokenType.EOF:
+                    result = ApplyOperation(result, currentNumber, currentOperator);
+                    currentOperator = token.Type == TokenType.Operator ? token.Value.Span[0] : '+';
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    static double ApplyOperation(double left, double right, char op)
+    {
+        switch (op)
+        {
+            case '+': return left + right;
+            case '-': return left - right;
+            case '*': return left * right;
+            case '/':
+                if (right == 0)
+                    throw new DivideByZeroException("Cannot divide by zero");
+                return left / right;
+            default: throw new ArgumentException($"Invalid operator: '{op}'");
         }
     }
 }
+
