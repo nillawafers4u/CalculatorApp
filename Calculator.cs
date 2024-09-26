@@ -18,11 +18,16 @@ internal class Program
         while (true)
         {
             Console.Write("Enter a math problem (or 'exit' to quit): ");
-            string input = Console.ReadLine();
+            var input = Console.ReadLine();
 
             if (input.ToLower() == "exit")
                 break;
-
+            else if (input.ToLower() == "")
+            {
+                Console.WriteLine("nothing was entered.");                
+            }
+            
+            else
             try
             {
                 var tokens = Tokenize(input);
@@ -81,7 +86,7 @@ internal class Program
             switch (token.Type)
             {
                 case TokenType.Number:
-                    currentNumber = double.Parse(token.Value.Span, CultureInfo.InvariantCulture);
+                    currentNumber = double.Parse(token.Value.Span);
                     break;
                 case TokenType.Operator:
                 case TokenType.EOF:
@@ -90,7 +95,6 @@ internal class Program
                     break;
             }
         }
-
         return result;
     }
 
