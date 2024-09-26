@@ -20,9 +20,9 @@ internal class Program
             Console.Write("Enter a math problem (or 'exit' to quit): ");
             var input = Console.ReadLine();
 
-            if (input.ToLower() == "exit")
+            if (input == "exit")
                 break;
-            else if (input.ToLower() == "")
+            else if (input == "")
             {
                 Console.WriteLine("nothing was entered.");                
             }
