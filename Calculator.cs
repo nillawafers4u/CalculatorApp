@@ -23,15 +23,15 @@ internal class Program
 
             if (input == "exit")
                 break;
-            else if (input == "")
+            else if (string.IsNullOrEmpty(input))
             {
-                Console.WriteLine("nothing was entered.");                
+                Console.WriteLine("nothing was entered.");
+                continue;
             }
             
-            else
             try
             {
-                var tokens = Tokenize(input);
+                var tokens = Tokenize(input.AsMemory());
                 double result = EvaluateTokens(tokens);
                 Console.WriteLine($"The result is {result}");
             }
@@ -42,37 +42,57 @@ internal class Program
         }
     }
 
-    static List<Token> Tokenize(string input)
+    static List<Token> Tokenize(ReadOnlyMemory<char> input)
     {
         var tokens = new List<Token>();
-        int start;
-        int i = 0;
-        var dotsValid = false;
-        var dotCounter = 0;
 
-        while (i < input.Length)
+        while (!input.IsEmpty)
         {
+            var span = input.Span;
 
-            if (char.IsDigit(input[i]) || input[i] == '.')
+            if (char.IsWhiteSpace(span[0]))
             {
-                start = i;
-                while (i < input.Length && (char.IsDigit(input[i]) || input[i] == '.'))
-                    i++;
-                tokens.Add(new Token(TokenType.Number, input.AsMemory(start, i - start)));
+                input = input[1..];
+                continue;
             }
-            else if (input[i] is '+' or '-' or '*' or '/')
+
+            if (span[0] is '+' or '-' or '*' or '/')
             {
-                tokens.Add(new Token(TokenType.Operator, input.AsMemory(i, 1)));
-                i++;
+                tokens.Add(new Token(TokenType.Operator, input[..1]));
+                input = input[1..];
+                continue;
             }
-            else if (!char.IsWhiteSpace(input[i]))
+
+            if (char.IsDigit(span[0]) || span[0] == '.')
             {
-                throw new ArgumentException($"Invalid character in expression: '{input[i]}'");
+                int length = 1;
+                bool hasDecimal = span[0] == '.';
+
+                while (length < input.Length &&
+                    (char.IsDigit(span[length]) ||
+                    (span[length] == '.' && !hasDecimal)))
+                {
+                    if (span[length] == '.')
+                        hasDecimal = true;
+                    length++;
+                }
+
+                var numberSlice = input[..length];
+                if (double.TryParse(numberSlice.Span, out _))
+                {
+                    tokens.Add(new Token(TokenType.Number, numberSlice));
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid number format: '{numberSlice}'");
+                }
+
+                input = input[length..];
+                continue;
             }
-            else
-            {
-                i++;
-            }
+
+            throw new ArgumentException($"Invalid Character in expression: '{span[0]}'");
+
         }
 
         tokens.Add(new Token(TokenType.EOF, ReadOnlyMemory<char>.Empty));
@@ -103,14 +123,14 @@ internal class Program
 
     static double ApplyOperation(double left, double right, char op)
     {
-        switch (op)
+        return op switch
         {
-            case '+': return left + right;
-            case '-': return left - right;
-            case '*': return left * right;
-            case '/': return left / right;
-            default: throw new ArgumentException($"Invalid operator: '{op}'");
-        }
+            '+' => left + right,
+            '-' => left - right,
+            '*' => left * right,
+            '/' => right != 0 ? left / right :
+            throw new ArgumentException($"Invalid operator: '{op}'"), _ => throw new ArgumentException()
+        };
     }
 }
 

@@ -14,18 +14,20 @@ namespace ConsoleApp1
         EOF
     }
 
-    record struct Token
-    {
+    record struct Token(TokenType Type, ReadOnlyMemory<char> Value);
 
-
-        public readonly TokenType Type { get; }
-        public readonly ReadOnlyMemory<char> Value { get; }
-
-        public Token(TokenType type, ReadOnlyMemory<char> value)
+    /*    record struct Token
         {
-            Type = type;
-            Value = value;
-        }
-    }
+
+
+            public readonly TokenType Type { get; }
+            public readonly ReadOnlyMemory<char> Value { get; }
+
+            public Token(TokenType type, ReadOnlyMemory<char> value)
+            {
+                Type = type;
+                Value = value;
+            }
+        }*/
 }
 
