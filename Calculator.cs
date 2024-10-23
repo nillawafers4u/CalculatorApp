@@ -3,6 +3,7 @@
 using Microsoft.VisualBasic;
 using System.Diagnostics.SymbolStore;
 using System.Globalization;
+using System.Net.Security;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 namespace ConsoleApp1;
@@ -46,9 +47,12 @@ internal class Program
         var tokens = new List<Token>();
         int start;
         int i = 0;
+        var dotsValid = false;
+        var dotCounter = 0;
 
         while (i < input.Length)
         {
+
             if (char.IsDigit(input[i]) || input[i] == '.')
             {
                 start = i;
@@ -56,7 +60,7 @@ internal class Program
                     i++;
                 tokens.Add(new Token(TokenType.Number, input.AsMemory(start, i - start)));
             }
-            else if (input[i] == '+' || input[i] == '-' || input[i] == '*' || input[i] == '/')
+            else if (input[i] is '+' or '-' or '*' or '/')
             {
                 tokens.Add(new Token(TokenType.Operator, input.AsMemory(i, 1)));
                 i++;
@@ -88,8 +92,7 @@ internal class Program
                 case TokenType.Number:
                     currentNumber = double.Parse(token.Value.Span);
                     break;
-                case TokenType.Operator:
-                case TokenType.EOF:
+                case TokenType.Operator or TokenType.EOF:
                     result = ApplyOperation(result, currentNumber, currentOperator);
                     currentOperator = token.Type == TokenType.Operator ? token.Value.Span[0] : '+';
                     break;
@@ -105,10 +108,7 @@ internal class Program
             case '+': return left + right;
             case '-': return left - right;
             case '*': return left * right;
-            case '/':
-                if (right == 0)
-                    throw new DivideByZeroException("Cannot divide by zero");
-                return left / right;
+            case '/': return left / right;
             default: throw new ArgumentException($"Invalid operator: '{op}'");
         }
     }

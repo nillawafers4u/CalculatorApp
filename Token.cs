@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,10 +14,12 @@ namespace ConsoleApp1
         EOF
     }
 
-    class Token
+    record struct Token
     {
-        public TokenType Type { get; }
-        public ReadOnlyMemory<char> Value { get; }
+
+
+        public readonly TokenType Type { get; }
+        public readonly ReadOnlyMemory<char> Value { get; }
 
         public Token(TokenType type, ReadOnlyMemory<char> value)
         {
