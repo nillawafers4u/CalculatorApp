@@ -66,27 +66,40 @@ internal class Program
             if (char.IsDigit(span[0]) || span[0] == '.')
             {
                 int length = 1;
-                bool hasDecimal = span[0] == '.';
+                var hasDecimal = false;
+
+                if (span[0] == '.')
+                {
+                    hasDecimal = true;
+                    //must have at least one digit after decimal point..
+
+                    if (length + 1 >= input.Length || !char.IsDigit(span[length + 1]))
+                        throw new ArgumentException("Invalid decimal format: missing digits after decimal point");
+                }
 
                 while (length < input.Length &&
                     (char.IsDigit(span[length]) ||
                     (span[length] == '.' && !hasDecimal)))
                 {
+
                     if (span[length] == '.')
+                    {
+                        if (hasDecimal)
+                            throw new ArgumentException("Invalid number format: multiple decimal points detected");
+
+
                         hasDecimal = true;
+                    }
+
                     length++;
                 }
 
                 var numberSlice = input[..length];
-                if (double.TryParse(numberSlice.Span, out _))
-                {
-                    tokens.Add(new Token(TokenType.Number, numberSlice));
-                }
-                else
-                {
+                if (!double.TryParse(numberSlice.Span, out _))
                     throw new ArgumentException($"Invalid number format: '{numberSlice}'");
-                }
 
+
+                tokens.Add(new Token(TokenType.Number, numberSlice));
                 input = input[length..];
                 continue;
             }
