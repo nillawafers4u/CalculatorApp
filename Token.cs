@@ -7,27 +7,16 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1
 {
-    enum TokenType
+    public enum TokenType
     {
         Number,
         Operator,
         EOF
     }
 
-    record struct Token(TokenType Type, ReadOnlyMemory<char> Value);
-
-    /*    record struct Token
-        {
-
-
-            public readonly TokenType Type { get; }
-            public readonly ReadOnlyMemory<char> Value { get; }
-
-            public Token(TokenType type, ReadOnlyMemory<char> value)
-            {
-                Type = type;
-                Value = value;
-            }
-        }*/
+    public readonly record struct Token(
+        TokenType Type,
+        ReadOnlyMemory<char> Value
+    );
 }
 

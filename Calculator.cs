@@ -42,6 +42,18 @@ internal class Program
         }
     }
 
+
+    /*
+    ==========================================================
+    To do:
+
+    1. Create Dictionary maybe for create formal language (this is basically a defined ruleset in my code that can be used to filter things essentially)
+    2. Parse through the input string using that dictionary to create a list of tokens (kind of have this already)
+    3. write a recursive function that evaluates the tokens in the list based on the aformentioned dictionary so it accounts for order of operations.
+
+    ==========================================================
+    */
+
     static List<Token> Tokenize(ReadOnlyMemory<char> input)
     {
         var tokens = new List<Token>();
