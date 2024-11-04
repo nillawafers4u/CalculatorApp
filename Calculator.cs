@@ -6,7 +6,8 @@ using System.Globalization;
 using System.Net.Security;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-namespace ConsoleApp1;
+using System.Collections.Generic;
+namespace Calculator;
 
 
 
@@ -28,11 +29,13 @@ internal class Program
                 Console.WriteLine("nothing was entered.");
                 continue;
             }
-            
+
+
             try
             {
                 var tokens = Tokenize(input.AsMemory());
-                double result = EvaluateTokens(tokens);
+                var ast = ParseExpression(tokens);
+                var result = Evaluate(ast);
                 Console.WriteLine($"The result is {result}");
             }
             catch (Exception ex)
@@ -42,17 +45,6 @@ internal class Program
         }
     }
 
-
-    /*
-    ==========================================================
-    To do:
-
-    1. Create Dictionary maybe for create formal language (this is basically a defined ruleset in my code that can be used to filter things essentially)
-    2. Parse through the input string using that dictionary to create a list of tokens (kind of have this already)
-    3. write a recursive function that evaluates the tokens in the list based on the aformentioned dictionary so it accounts for order of operations.
-
-    ==========================================================
-    */
 
     static List<Token> Tokenize(ReadOnlyMemory<char> input)
     {
@@ -68,7 +60,7 @@ internal class Program
                 continue;
             }
 
-            if (span[0] is '+' or '-' or '*' or '/')
+            if (span[0] is '+' or '-' or '*' or '/' or '(' or ')')
             {
                 tokens.Add(new Token(TokenType.Operator, input[..1]));
                 input = input[1..];
@@ -124,38 +116,76 @@ internal class Program
         return tokens;
     }
 
-    static double EvaluateTokens(List<Token> tokens)
-    {
-        double result = 0;
-        double currentNumber = 0;
-        char currentOperator = '+';
 
-        foreach (var token in tokens)
+    static AstNode ParseExpression(List<Token> tokens)
+    {
+        AstNode expression = ParseTerm(tokens);
+        while (tokens.Count > 0 && tokens[0].Type == TokenType.Operator && (tokens[0].Value.Span[0] == '+' || tokens[0].Value.Span[0] == '-'))
         {
-            switch (token.Type)
-            {
-                case TokenType.Number:
-                    currentNumber = double.Parse(token.Value.Span);
-                    break;
-                case TokenType.Operator or TokenType.EOF:
-                    result = ApplyOperation(result, currentNumber, currentOperator);
-                    currentOperator = token.Type == TokenType.Operator ? token.Value.Span[0] : '+';
-                    break;
-            }
+            char op = tokens[0].Value.Span[0];
+            tokens.RemoveAt(0);
+            expression = new BinaryOperationNode(op, expression, ParseTerm(tokens));
         }
-        return result;
+
+        return expression;
     }
 
-    static double ApplyOperation(double left, double right, char op)
+
+    static AstNode ParseTerm(List<Token> tokens)
     {
-        return op switch
+        AstNode term = ParseFactor(tokens);
+        while (tokens.Count > 0 && tokens[0].Type == TokenType.Operator && (tokens[0].Value.Span[0] == '*' || tokens[0].Value.Span[0] == '/'))
         {
-            '+' => left + right,
-            '-' => left - right,
-            '*' => left * right,
-            '/' => right != 0 ? left / right :
-            throw new ArgumentException($"Invalid operator: '{op}'"), _ => throw new ArgumentException()
-        };
+            char op = tokens[0].Value.Span[0];
+            tokens.RemoveAt(0);
+            term = new BinaryOperationNode(op, term, ParseFactor(tokens));
+        }
+        return term;
+
     }
+
+
+    static AstNode ParseFactor(List<Token> tokens)
+    {
+        if (tokens.Count == 0) throw new ArgumentException("Unexpected end of input");
+
+        // Handle parentheses
+        if (tokens[0].Type == TokenType.Operator && tokens[0].Value.Span[0] == '(')
+        {
+            tokens.RemoveAt(0); // Remove the '(' token
+            AstNode expr = ParseExpression(tokens);
+            if (tokens.Count == 0 || tokens[0].Type != TokenType.Operator || tokens[0].Value.Span[0] != ')')
+                throw new ArgumentException("Mismatched parentheses");
+            tokens.RemoveAt(0); // Remove the ')' token
+            return expr;
+        }
+
+        if (tokens[0].Type == TokenType.Number)
+        {
+            double value = double.Parse(tokens[0].Value.Span);
+            tokens.RemoveAt(0);
+            return new NumberNode(value);
+        }
+
+        throw new ArgumentException("Invalid syntax");
+    }
+
+
+    static double Evaluate(AstNode node) => node.Evaluate();
+
+
+
+    /*  static double ApplyOperation(double left, double right, char op)
+      {
+          return op switch
+          {
+              '+' => left + right,
+              '-' => left - right,
+              '*' => left * right,
+              '/' => right != 0 ? left / right :
+              throw new ArgumentException($"Invalid operator: '{op}'"),
+              _ => throw new ArgumentException()
+          };
+      }*/
 }
 
