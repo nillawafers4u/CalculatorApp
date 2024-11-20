@@ -49,6 +49,7 @@ internal class Program
     static List<Token> Tokenize(ReadOnlyMemory<char> input)
     {
         var tokens = new List<Token>();
+        int parenthesisBalance = 0;
 
         while (!input.IsEmpty)
         {
@@ -62,6 +63,17 @@ internal class Program
 
             if (span[0] is '+' or '-' or '*' or '/' or '(' or ')')
             {
+                //Makes sure that we actually have the correct amount of open and closes.
+                if (span[0] == '(')
+                    parenthesisBalance++;
+                else if (span[0] == ')')
+                {
+                    parenthesisBalance--;
+                    if (parenthesisBalance < 0)
+                        throw new ArgumentException("Unbalanced parentheses. You have closing parenthesis without matching opening parenthesis");
+                }
+
+
                 tokens.Add(new Token(TokenType.Operator, input[..1]));
                 input = input[1..];
                 continue;
@@ -131,10 +143,11 @@ internal class Program
         return expression;
     }
 
-    //but ParseTerm says term = ParseFactor
+
     static AstNode ParseTerm(List<Token> tokens)
     {
         AstNode term = ParseFactor(tokens);
+
         while (tokens.Count > 0 && tokens[0].Type == TokenType.Operator && 
             (tokens[0].Value.Span[0] == '*' || tokens[0].Value.Span[0] == '/'))
         {
@@ -142,6 +155,7 @@ internal class Program
             tokens.RemoveAt(0);
             term = new BinaryOperationNode(op, term, ParseFactor(tokens));
         }
+
         return term;
         //Term getting passed back up to ParseExpression ^^
 
@@ -150,25 +164,30 @@ internal class Program
     //and ParseFactor finally get our first thing and it starts working it's way back up! ^^
     static AstNode ParseFactor(List<Token> tokens)
     {
-        if (tokens.Count == 0) throw new ArgumentException("Unexpected end of input");
 
         // Handles parentheses
         if (tokens[0].Type == TokenType.Operator && tokens[0].Value.Span[0] == '(')
         {
             tokens.RemoveAt(0); // Remove the '(' token
-            AstNode expr = ParseExpression(tokens);
+            AstNode expression = ParseExpression(tokens);
+
+            //ensure we see a closing parentheses and remove it
             if (tokens.Count == 0 || tokens[0].Type != TokenType.Operator || tokens[0].Value.Span[0] != ')')
                 throw new ArgumentException("Mismatched parentheses");
+
+
             tokens.RemoveAt(0); // Remove the ')' token
-            return expr;
+            return expression;
         }
 
         if (tokens[0].Type == TokenType.Number)
         {
             double value = double.Parse(tokens[0].Value.Span);
+
             tokens.RemoveAt(0);
+
             return new NumberNode(value); 
-            //NumberNode getting passed back up to the ParseTerm Function! ^^
+            //NumberNode getting passed back up to the ParseTerm Function ^^
         }
 
         throw new ArgumentException("Invalid syntax");
