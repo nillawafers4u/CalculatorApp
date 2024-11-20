@@ -120,7 +120,8 @@ internal class Program
     static AstNode ParseExpression(List<Token> tokens)
     {
         AstNode expression = ParseTerm(tokens);
-        while (tokens.Count > 0 && tokens[0].Type == TokenType.Operator && (tokens[0].Value.Span[0] == '+' || tokens[0].Value.Span[0] == '-'))
+        while (tokens.Count > 0 && tokens[0].Type == TokenType.Operator &&
+            (tokens[0].Value.Span[0] == '+' || tokens[0].Value.Span[0] == '-')) /* <== this only works while there's another operator */
         {
             char op = tokens[0].Value.Span[0];
             tokens.RemoveAt(0);
@@ -130,26 +131,28 @@ internal class Program
         return expression;
     }
 
-
+    //but ParseTerm says term = ParseFactor
     static AstNode ParseTerm(List<Token> tokens)
     {
         AstNode term = ParseFactor(tokens);
-        while (tokens.Count > 0 && tokens[0].Type == TokenType.Operator && (tokens[0].Value.Span[0] == '*' || tokens[0].Value.Span[0] == '/'))
+        while (tokens.Count > 0 && tokens[0].Type == TokenType.Operator && 
+            (tokens[0].Value.Span[0] == '*' || tokens[0].Value.Span[0] == '/'))
         {
             char op = tokens[0].Value.Span[0];
             tokens.RemoveAt(0);
             term = new BinaryOperationNode(op, term, ParseFactor(tokens));
         }
         return term;
+        //Term getting passed back up to ParseExpression ^^
 
     }
 
-
+    //and ParseFactor finally get our first thing and it starts working it's way back up! ^^
     static AstNode ParseFactor(List<Token> tokens)
     {
         if (tokens.Count == 0) throw new ArgumentException("Unexpected end of input");
 
-        // Handle parentheses
+        // Handles parentheses
         if (tokens[0].Type == TokenType.Operator && tokens[0].Value.Span[0] == '(')
         {
             tokens.RemoveAt(0); // Remove the '(' token
@@ -164,7 +167,8 @@ internal class Program
         {
             double value = double.Parse(tokens[0].Value.Span);
             tokens.RemoveAt(0);
-            return new NumberNode(value);
+            return new NumberNode(value); 
+            //NumberNode getting passed back up to the ParseTerm Function! ^^
         }
 
         throw new ArgumentException("Invalid syntax");
