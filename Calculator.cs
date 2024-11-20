@@ -173,19 +173,5 @@ internal class Program
 
     static double Evaluate(AstNode node) => node.Evaluate();
 
-
-
-    /*  static double ApplyOperation(double left, double right, char op)
-      {
-          return op switch
-          {
-              '+' => left + right,
-              '-' => left - right,
-              '*' => left * right,
-              '/' => right != 0 ? left / right :
-              throw new ArgumentException($"Invalid operator: '{op}'"),
-              _ => throw new ArgumentException()
-          };
-      }*/
 }
 
